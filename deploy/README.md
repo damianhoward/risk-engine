@@ -1,17 +1,23 @@
 # Deploy
 
 The live risk view runs as a systemd JVM service behind Caddy, alongside the order book on the
-same box. The pipeline (`.github/workflows/deploy.yml`) builds once via `installDist`, ships the
-tested artifact over SSH against a pinned host key, unpacks it into `~/releases/risk-engine/<commit>`
-and moves `~/risk-engine` onto it with a symlink rename, syncs the systemd unit only on change,
-restarts, and gates success on a `/readyz` 200. A release that does not come up is rolled back to
-its predecessor by the same remote script; three releases are retained.
+same box. The pipeline (`.github/workflows/deploy.yml`) builds once via `installDist`, then asks
+the box for a release over SSH against a pinned host key, with the bundle on stdin. The release
+unpacks into `/srv/risk-engine/releases/<commit>` and `/srv/risk-engine/current` moves onto it with
+a symlink rename; success is gated on a `/readyz` 200. A release that does not come up is rolled
+back to its predecessor by the script on the box; three releases are retained.
 
 ## Service
 
-`deploy/risk-engine.service` runs the `installDist` launcher on `PORT=8081` with `-Xmx160m` — the
-process is light (no Kafka, no ring buffer), sized to fit beside the order book on a 1 GB box. Port
-8081 is bound to localhost; only Caddy is public.
+The systemd unit runs the `installDist` launcher on `PORT=8081` with `-Xmx160m` — the process is
+light (no Kafka, no ring buffer), sized to fit beside the order book on a 1 GB box. Port 8081 is
+bound to localhost; only Caddy is public.
+
+The unit is not in this repository. A unit file is a request to run anything as anyone, so a
+deploy account able to install one holds root by another name; it is owned as host configuration
+and applied by an operator. `DEPLOY_SSH_KEY` is a key of CI's own, pinned on the box to a forced
+command — it can ask for a release and nothing else, and the account behind it may run exactly one
+command as root, `systemctl restart risk-engine`.
 
 ## GitHub Actions secrets (repo settings → Secrets → Actions)
 
