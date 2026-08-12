@@ -1,8 +1,8 @@
 # Risk Engine
 
-[![CI](https://github.com/damian1000/risk-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/damian1000/risk-engine/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/damian1000/risk-engine/actions/workflows/codeql.yml/badge.svg)](https://github.com/damian1000/risk-engine/actions/workflows/codeql.yml)
-[![codecov](https://codecov.io/gh/damian1000/risk-engine/graph/badge.svg)](https://codecov.io/gh/damian1000/risk-engine)
+[![CI](https://github.com/damianhoward/risk-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/damianhoward/risk-engine/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/damianhoward/risk-engine/actions/workflows/codeql.yml/badge.svg)](https://github.com/damianhoward/risk-engine/actions/workflows/codeql.yml)
+[![codecov](https://codecov.io/gh/damianhoward/risk-engine/graph/badge.svg)](https://codecov.io/gh/damianhoward/risk-engine)
 
 A risk framework for a vanilla equity option: pricing, Greeks, portfolio aggregation, VaR and Expected Shortfall, PnL explain, a rendered risk report, and the invariants that prove they're correct.
 

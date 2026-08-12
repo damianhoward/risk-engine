@@ -5,12 +5,12 @@ plugins {
     id 'application'
 }
 
-group = 'io.github.damian1000'
+group = 'com.damianhoward'
 version = '1.0.0'
 
 application {
     applicationName = 'risk-engine'
-    mainClass = 'io.github.damian1000.riskengine.web.RiskWebServerKt'
+    mainClass = 'com.damianhoward.riskengine.web.RiskWebServerKt'
 }
 
 dependencies {
