@@ -1,7 +1,7 @@
 // The pure risk library: model, pricing, risk, report. No web, no entry point - this is the
 // module published for consumers (JitPack builds it from a tag).
 plugins {
-    id 'io.github.damian1000.kotlin-conventions'
+    id 'com.damianhoward.kotlin-conventions'
     id 'java-library'
     id 'maven-publish'
 }
