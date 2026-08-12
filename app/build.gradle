@@ -1,7 +1,7 @@
 // The runnable live risk view: a dependency-free JDK-HttpServer wrapper over :core's
 // RiskReportAssembler. This is the module the deploy pipeline ships (installDist).
 plugins {
-    id 'io.github.damian1000.kotlin-conventions'
+    id 'com.damianhoward.kotlin-conventions'
     id 'application'
 }
 
