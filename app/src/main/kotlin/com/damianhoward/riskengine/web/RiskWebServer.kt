@@ -20,7 +20,9 @@ import java.util.concurrent.TimeUnit
  * `/healthz` proves the web process answers; `/readyz` reprices the sample book end to end through
  * the real calculators, so a deploy whose pricing path throws reads as not-ready (503) rather than
  * serving 500s on the first request — the engine has no external dependency to probe, so exercising
- * its own compute is the readiness signal that means something.
+ * its own compute is the readiness signal that means something. `/metrics` publishes process-level
+ * facts only and never that reprice: see [ProcessMetrics] for why a check worth running per probe
+ * is the wrong thing to run per scrape.
  *
  * `/api/report` accepts GET (the sample book) or POST (a book/market described in the request), both
  * side-effect-free reprices. Both verbs are rate-limited per client ([reportLimiter], keyed by
@@ -44,6 +46,7 @@ class RiskWebServer(
      * positional call sites are unaffected.
      */
     private val bindAddress: InetAddress = InetAddress.getLoopbackAddress(),
+    private val processMetrics: ProcessMetrics = ProcessMetrics(),
 ) {
     private lateinit var server: HttpServer
     private lateinit var executor: ExecutorService
@@ -79,6 +82,7 @@ class RiskWebServer(
             when (exchange.requestURI.path) {
                 "/healthz" -> get(exchange) { respond(exchange, 200, "text/plain", "ok") }
                 "/readyz" -> get(exchange) { ready(exchange) }
+                "/metrics" -> get(exchange) { respond(exchange, 200, ProcessMetrics.CONTENT_TYPE, processMetrics.render()) }
                 "/" -> get(exchange) { respond(exchange, 200, "text/html; charset=utf-8", assets.indexHtml) }
                 "/app.css" -> get(exchange) { respond(exchange, 200, "text/css; charset=utf-8", assets.appCss) }
                 "/app.js" -> get(exchange) { respond(exchange, 200, "text/javascript; charset=utf-8", assets.appJs) }
