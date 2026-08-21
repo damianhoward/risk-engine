@@ -3,6 +3,8 @@ package com.damianhoward.riskengine.web
 import java.lang.management.GarbageCollectorMXBean
 import java.lang.management.ManagementFactory
 import java.lang.management.MemoryMXBean
+import java.lang.management.MemoryPoolMXBean
+import java.lang.management.MemoryType
 import java.lang.management.RuntimeMXBean
 import java.lang.management.ThreadMXBean
 
@@ -22,14 +24,28 @@ import java.lang.management.ThreadMXBean
  *
  * Heap against its ceiling is the load-bearing one. Both boxes are 1 GB with four JVMs, and the
  * ceilings were set by guess: this service was measured once, by hand, at 4 MB live against a
- * 160 MB ceiling. A series makes that a fact over time rather than one `jcmd` during an audit.
+ * 160 MB ceiling.
+ *
+ * [heapPeak] and [heapPostGc] are what replace that hand measurement, and neither needs a series to
+ * be read correctly. The collection being stood up is off-box on a five-minute interval, and a heap
+ * sawtooths between collections, so a sampled maximum finds troughs as often as crests and
+ * under-reads the real peak. The JVM keeps the high-water mark itself, so the peak is right at any
+ * interval; the live set barely sawtooths, so five minutes suits it. Peak says how much this
+ * process touched, the live set how much it needs, and a ceiling wants the second plus room for the
+ * collector to work.
  */
 class ProcessMetrics(
     private val runtime: RuntimeMXBean = ManagementFactory.getRuntimeMXBean(),
     private val memory: MemoryMXBean = ManagementFactory.getMemoryMXBean(),
     private val threads: ThreadMXBean = ManagementFactory.getThreadMXBean(),
     private val collectors: List<GarbageCollectorMXBean> = ManagementFactory.getGarbageCollectorMXBeans(),
+    pools: List<MemoryPoolMXBean> = ManagementFactory.getMemoryPoolMXBeans(),
 ) {
+    // Heap pools only. Metaspace and the code cache are memory this process occupies and neither is
+    // governed by the heap ceiling, so summing them here would inflate a number whose whole purpose
+    // is to be compared against -Xmx.
+    private val heapPools = pools.filter { it.type == MemoryType.HEAP }
+
     fun render(): String {
         val out = StringBuilder()
 
@@ -87,6 +103,34 @@ class ProcessMetrics(
             )
         }
 
+        // Summed across heap pools, and the sum is an over-estimate: pools reach their own peaks at
+        // different moments, so adding those peaks can exceed any total that was ever simultaneously
+        // live. That error has a direction, and it is the safe one for sizing a ceiling — it cannot
+        // talk a ceiling down below what the process needed. Read it as an upper bound rather than a
+        // measurement, which is what the pair with the post-collection gauge below is for.
+        //
+        // Monotonic since start, so a restart resets it. That is the same reset uptime already
+        // reports and the reason it is published beside one.
+        heapPeak()?.let {
+            gauge(
+                "${PREFIX}jvm_heap_peak_bytes",
+                "Highest heap the JVM has held since start, summed across heap pools. An upper bound, not a reading.",
+                it,
+            )
+        }
+
+        // Usage after the most recent collection: the live set, which is what a ceiling has to hold.
+        // A pool answers null until it has been collected at all, so on a young process this is
+        // absent rather than zero — and absent is the honest answer, since nothing has established
+        // a live set yet. Zero would read as an empty heap, which is a different claim.
+        heapPostGc()?.let {
+            gauge(
+                "${PREFIX}jvm_heap_post_gc_bytes",
+                "Heap still live after the last collection, summed across heap pools. The number a ceiling must cover.",
+                it,
+            )
+        }
+
         gauge("${PREFIX}jvm_threads", "Live threads, daemon and non-daemon.", threads.threadCount)
 
         // The collector names come from the JVM's own configuration, so the label set is fixed at
@@ -106,6 +150,20 @@ class ProcessMetrics(
         )
 
         return out.toString()
+    }
+
+    // Null rather than zero when there are no heap pools to ask. A JVM always has some, so this is
+    // the substituted-bean case in a test rather than anything a live process does — but a summed
+    // zero would publish "this heap has never held anything", which is a claim about the process
+    // instead of about the absence of an answer.
+    private fun heapPeak(): Long? = heapPools.ifEmpty { null }?.sumOf { it.peakUsage.used }
+
+    // Null until something has been collected. getCollectionUsage is null on a pool the collector
+    // has not touched, and unsupported on some pools outright, so a partial sum would silently
+    // report a live set missing whichever pools stayed quiet.
+    private fun heapPostGc(): Long? {
+        val usages = heapPools.map { it.collectionUsage }
+        return if (usages.isEmpty() || usages.any { it == null }) null else usages.sumOf { it!!.used }
     }
 
     // Rendered rather than divided into a Double, so a duration never reaches the endpoint in
