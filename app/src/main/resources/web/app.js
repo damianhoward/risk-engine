@@ -1,5 +1,8 @@
-// Embedded as a trading-desk tab (?embed=1): the desk supplies the outer chrome, so hide this
-// app's own topbar/status bar (see app.css .embedded). Standalone, the class is never added.
+// Support for being embedded as a trading-desk tab (?embed=1): the desk would supply the outer
+// chrome, so this hides the app's own topbar/status bar (see app.css .embedded). The desk carries
+// no Risk tab today — this site is standalone, so the class is never added — and the support stays
+// because the roadmap wants that tab back once it shows the desk's positions rather than a sample
+// book, which is why it was removed.
 if (new URLSearchParams(location.search).has("embed")) {
   document.body.classList.add("embedded");
 }

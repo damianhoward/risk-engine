@@ -429,8 +429,8 @@ table.risk thead th {
   margin-bottom: 0;
 }
 
-/* Embedded as a trading-desk tab (?embed=1): the desk supplies the outer chrome, so hide this
-   app's own topbar and status bar. */
+/* Support for being embedded as a trading-desk tab (?embed=1), where the desk would supply the
+   outer chrome. The desk carries no Risk tab today; see app.js for why this stays. */
 .embedded .topbar,
 .embedded .statusbar {
   display: none;
