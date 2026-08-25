@@ -19,7 +19,7 @@ const stVarEl = document.getElementById("st-var");
 const stPnlEl = document.getElementById("st-pnl");
 
 // Fields the form displays as a percentage (e.g. "10" for 10%) but the API takes as a decimal
-// fraction (0.10) -- see workspace-config/CLAUDE.md for the percentage-vs-decimal rule.
+// fraction (0.10). submitForm divides by 100 on the way out, so the conversion happens once.
 const PERCENT_FIELDS = ["riskFreeRate", "dividendYield", "confidence"];
 
 let requestCount = 0;

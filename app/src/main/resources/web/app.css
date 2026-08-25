@@ -1,7 +1,7 @@
 /* Terminal-style dark UI, shared with orderbook: near-black canvas, warm-white ink, a teal brand
    accent, green/red for gain/loss, one monospace family with tabular figures so every digit sits
-   in a fixed column. See workspace-config/CLAUDE.md -> "Live demo look and feel" for the shared
-   token set every live demo draws from. */
+   in a fixed column. The tokens below are the shared set every live demo draws from, copied
+   from orderbook's app.css. */
 
 :root {
   --bg-base: #08090c;
