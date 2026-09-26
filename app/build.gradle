@@ -17,7 +17,7 @@ dependencies {
     implementation project(':core')
 
     testImplementation deps.hamcrest
-    testImplementation 'com.microsoft.playwright:playwright:1.61.0'
+    testImplementation deps.playwright
 }
 
 // Downloads the Chromium build RiskViewBrowserTest drives (a no-op when already present).
