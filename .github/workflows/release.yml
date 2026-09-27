@@ -14,6 +14,11 @@ jobs:
   release:
     uses: damianhoward/.github/.github/workflows/release.yml@main
     with:
-      build-command: clean build
-      # Notes only: this repository is deployed from main, and position-ledger consumes its pricing
-      # API through JitPack, which builds the artifact from the tag itself.
+      # The tag is verified, then :core is published to Maven Central, where position-ledger
+      # resolves its pricing API. The service itself is deployed from main, not from the tag.
+      build-command: clean build publishAndReleaseToMavenCentral
+    secrets:
+      CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+      CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+      SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+      SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
