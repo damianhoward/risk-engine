@@ -18,7 +18,7 @@ dependencies {
     testImplementation 'net.jqwik:jqwik:1.10.1'
     // Independent implementation the cross-validation tests price against. Test scope only:
     // the pricing in main stays hand-written, Strata never leaks into the library's API.
-    testImplementation 'com.opengamma.strata:strata-pricer:2.12.75'
+    testImplementation 'com.opengamma.strata:strata-pricer:2.12.76'
 }
 
 // Published to Maven Central by the release workflow when a version is tagged. Central requires
