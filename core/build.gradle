@@ -15,7 +15,7 @@ dependencies {
     testImplementation deps.hamcrest
     // Property-based testing: a JUnit 5 platform engine, runs alongside ordinary Jupiter tests
     // in the same source set via the existing useJUnitPlatform() -- no separate config needed.
-    testImplementation 'net.jqwik:jqwik:1.10.1'
+    testImplementation 'net.jqwik:jqwik:1.10.2'
     // Independent implementation the cross-validation tests price against. Test scope only:
     // the pricing in main stays hand-written, Strata never leaks into the library's API.
     testImplementation 'com.opengamma.strata:strata-pricer:2.12.77'
