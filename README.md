@@ -55,6 +55,8 @@ Four independent layers:
 
 `RiskViewBrowserTest` drives the full render path in a headless Chromium via Playwright — initial render, recompute-on-change, and the error banner — so a renamed JSON key or a broken front-end renderer fails CI instead of breaking the live view silently.
 
+The distribution carries its own Java runtime: a jlink image of the modules the service uses, linked from the same JDK the tests ran on, which the launcher prefers over any `JAVA_HOME`. `./gradlew check` fails if `jdeps` finds the code using a module the image lacks, then starts the installed distribution with `JAVA_HOME` pointing at a JDK that does not exist and probes every endpoint, so a release that would not run on its own runtime does not ship.
+
 ## Use it
 
 ```kotlin
@@ -136,13 +138,13 @@ The two VaR rows sit together on purpose: on this short-gamma option book histor
 
 ## Stack
 
-- Kotlin 2.4.20 (JVM target 25)
-- Java 25 toolchain
+- Kotlin 2.4.21 (JVM target 25)
+- Java 25 toolchain; each release ships its own jlinked runtime: only the modules the service uses, plus `jcmd` and JFR, and no compiler
 - JUnit Jupiter 6.1
 - Hamcrest 3
-- jqwik 1.10.1
+- jqwik 1.10.2
 - OpenGamma Strata 2.12 (tests only, as the pricing cross-check)
-- Playwright 1.61 (tests only, headless Chromium against the live view)
+- Playwright 1.65 (tests only, headless Chromium against the live view)
 
 ## License
 
