@@ -68,7 +68,7 @@ class RiskViewBrowserTest {
     fun `recomputes when a field is committed`() {
         val page = open()
         assertThat(page.locator("#report .report-block")).hasCount(3)
-        val valuationBefore = page.locator("#st-valuation").textContent()
+        val valuationBefore = checkNotNull(page.locator("#st-valuation").textContent())
         // fill + blur commits the field, firing the form "change" listener app.js recomputes on.
         page.locator("[name=spot]").fill("55")
         page.locator("[name=spot]").blur()
