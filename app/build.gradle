@@ -50,11 +50,24 @@ abstract class RuntimeImage extends DefaultTask {
     // a 300 MB directory on every build would cost more than linking does.
     @Input abstract Property<String> getJdkRelease()
     @Internal abstract DirectoryProperty getJdkHome()
+    @Input abstract Property<String> getMinimumJdk()
     @OutputDirectory abstract DirectoryProperty getImage()
     @Inject abstract ExecOperations getExec()
 
     @TaskAction
     void link() {
+        // The image is the JDK it is linked from, so an old JDK is an old runtime in production. On
+        // 2026-11-21 CI linked from the runner's cached 25.0.5+8 and the release shipped without
+        // the CVE-2026-91403 blocked.certs fix; refusing to link is how that fails here instead.
+        def line = jdkRelease.get().readLines().find { it.startsWith('JAVA_RUNTIME_VERSION=') }
+        if (line == null) {
+            throw new GradleException("${jdkHome.get()}/release names no JAVA_RUNTIME_VERSION, so the JDK cannot be checked against runtime.minimumJdk")
+        }
+        def linking = Runtime.Version.parse(line.substring(line.indexOf('"') + 1, line.lastIndexOf('"')))
+        def floor = Runtime.Version.parse(minimumJdk.get())
+        if (linking.compareToIgnoreOptional(floor) < 0) {
+            throw new GradleException("Refusing to link the runtime from JDK ${linking}: runtime.minimumJdk is ${floor}.")
+        }
         File out = image.get().asFile
         out.deleteDir() // jlink refuses an output directory that already exists
         String jlink = new File(jdkHome.get().asFile, System.getProperty('os.name').startsWith('Windows') ? 'bin/jlink.exe' : 'bin/jlink').path
@@ -155,6 +168,7 @@ def runtimeImage = tasks.register('runtimeImage', RuntimeImage) {
     modules = runtimeModules
     jdkHome = toolchainHome
     jdkRelease = toolchainHome.map { it.file('release').asFile.text }
+    minimumJdk = providers.gradleProperty('runtime.minimumJdk')
     image = layout.buildDirectory.dir('runtime')
 }
 
