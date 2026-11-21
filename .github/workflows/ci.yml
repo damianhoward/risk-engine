@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    uses: damianhoward/.github/.github/workflows/ci.yml@main
+    uses: damianhoward/.github/.github/workflows/ci.yml@dependabot/github_actions/actions-2b0b10b6e5
     with:
       coverage-report-files: core/build/reports/jacoco/test/jacocoTestReport.xml,app/build/reports/jacoco/test/jacocoTestReport.xml
       test-report-paths: |
