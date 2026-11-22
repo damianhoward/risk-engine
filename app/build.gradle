@@ -36,9 +36,8 @@ test.dependsOn installPlaywrightChromium
 // exercised against a loopback HttpServer and counted.
 coverageExcludes = ['**/web/RiskWebServerKt.class']
 
-// The release carries its own runtime (build-conventions' runtime-image): these modules plus jcmd
-// and JFR, linked from the build's JDK, which the launcher prefers over the unit's JAVA_HOME.
+// The release carries its own runtime (build-conventions' runtime-image), linked from the build's
+// JDK with the convention's module set, which the launcher prefers over the unit's JAVA_HOME.
 runtimeImage {
-    modules = ['java.base', 'java.management', 'jdk.httpserver']
     smokePaths = ['/readyz', '/', '/metrics', '/privacy']
 }
